@@ -39,7 +39,7 @@ export default function Card({
         {children}
       </div>
 
-      {/* Футер (необязательный) */}
+      {/* Нижняя часть — футер */}
       {footer && <div className="mt-4 text-sm text-center">{footer}</div>}
     </div>
   );

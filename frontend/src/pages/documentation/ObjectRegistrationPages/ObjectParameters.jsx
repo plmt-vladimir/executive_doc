@@ -28,7 +28,7 @@ export default function ObjectRegistrationPage() {
   return (
     <PageWrapper title="Регистрация объекта">
       {/* Внешняя группа с границей для всех 3 секций */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-5">
         {/* Группа для Параметров объекта */}
         <div className="group-box border border-[--color-border] col-span-4">
           <h3 className="group-box-title mb-4">Стройка</h3>
@@ -101,7 +101,7 @@ export default function ObjectRegistrationPage() {
 
         {/* Группа для участков */}
         <div className="group-box border border-[--color-border] col-span-2">
-          <h3 className="text-sm text-[--color-primary]">Участки</h3>
+        <h3 className="group-box-title mb-4">Участки</h3>
           <div className="grid grid-cols-4 gap-4 mb-4">
             <div className="col-span-2">
               <ComboBox

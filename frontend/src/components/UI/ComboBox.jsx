@@ -1,52 +1,96 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function ComboBox({
   options,
   label,
   onChange,
   placeholder = "Выберите...",
-  className = "", 
-  multiple = false
+  className = "",
 }) {
-  const [selectedValues, setSelectedValues] = useState(multiple ? [] : "");
+  const [inputValue, setInputValue] = useState("");
+  const [filteredOptions, setFilteredOptions] = useState(options);
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const containerRef = useRef();
 
-  const handleChange = (e) => {
-    if (multiple) {
-      const values = Array.from(e.target.selectedOptions, (option) => option.value);
-      setSelectedValues(values);
-      onChange(values);
-    } else {
-      setSelectedValues(e.target.value);
-      onChange(e.target.value);
+  useEffect(() => {
+    const filtered = options.filter((option) =>
+      option.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+    setFilteredOptions(filtered);
+    setHighlightIndex(0);
+  }, [inputValue, options]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelect = (option) => {
+    setInputValue(option.label);
+    onChange(option); // возвращаем объект { label, value }
+    setIsOpen(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!isOpen) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIndex((prev) => (prev + 1) % filteredOptions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filteredOptions[highlightIndex]) {
+        handleSelect(filteredOptions[highlightIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
     }
   };
 
   return (
-    <div className={`flex flex-col gap-2 ${className}`}> {/* ✅ Применили className */}
-      {label && <label className="text-[--color-primary]">{label}</label>}
-      <select
-        value={selectedValues}
-        onChange={handleChange}
-        className="w-full p-2 rounded border border-[--color-border] bg-white text-[--color-primary] focus:outline-none"
-        multiple={multiple}
-      >
-        <option
-          value=""
-          disabled={selectedValues !== ""}
-          className="text-[--color-primary]"
-        >
-          {placeholder}
-        </option>
-        {options.map((option, index) => (
-          <option
-            key={index}
-            value={option.value}
-            className="text-[--color-primary]"
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
+    <div className={`relative ${className}`} ref={containerRef}>
+      {label && <label className="text-[--color-primary] mb-1 block">{label}</label>}
+      <input
+        type="text"
+        value={inputValue}
+        placeholder={placeholder}
+        onChange={(e) => {
+          setInputValue(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={handleKeyDown}
+        className="w-full p-2 rounded border border-[--color-border] text-[--color-primary] bg-white focus:outline-none"
+      />
+
+      {isOpen && (
+        <ul className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded border border-[--color-border] bg-white shadow">
+          {filteredOptions.length === 0 ? (
+            <li className="px-3 py-2 text-gray-400 text-sm">Ничего не найдено</li>
+          ) : (
+            filteredOptions.map((option, index) => (
+              <li
+                key={index}
+                className={`px-3 py-2 cursor-pointer text-[--color-primary] ${
+                  index === highlightIndex ? "bg-[--color-secondary]/20" : "hover:bg-[--color-secondary]/10"
+                }`}
+                onMouseDown={() => handleSelect(option)} // не blur при клике
+              >
+                {option.label}
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 }

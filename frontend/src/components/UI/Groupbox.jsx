@@ -17,17 +17,17 @@ export default function GroupBox({
   return (
     <div
       className={clsx(
-        "p-6 rounded-2xl",
+        "group-box",
         variants[variant],
         bordered && "border border-[--color-border]",
         className
       )}
     >
       {title && (
-        <div className="flex items-center mb-4">
-          {icon && <div className="mr-2 text-xl">{icon}</div>}
-          <h3 className="font-bold text-lg font-[Roboto]">{title}</h3>
-        </div>
+        <h4 className="group-box-title">
+          {icon && <span className="mr-2 text-xl">{icon}</span>}
+          {title}
+        </h4>
       )}
 
       <div>{children}</div>
