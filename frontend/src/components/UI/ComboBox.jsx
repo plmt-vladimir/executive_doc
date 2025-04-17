@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import clsx from "clsx";
 
 export default function ComboBox({
   options,
@@ -6,12 +7,20 @@ export default function ComboBox({
   onChange,
   placeholder = "Выберите...",
   className = "",
+  size = "md" // sm / md
 }) {
   const [inputValue, setInputValue] = useState("");
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const containerRef = useRef();
+
+  const sizeClasses = {
+    sm: "text-sm py-1 px-2",
+    md: "text-base py-2 px-3"
+  };
+
+  const optionSizeClass = size === "sm" ? "text-sm py-1" : "py-2";
 
   useEffect(() => {
     const filtered = options.filter((option) =>
@@ -33,7 +42,7 @@ export default function ComboBox({
 
   const handleSelect = (option) => {
     setInputValue(option.label);
-    onChange(option); // возвращаем объект { label, value }
+    onChange?.(option.value ?? option); // <-- возвращаем .value если есть
     setIsOpen(false);
   };
 
@@ -57,19 +66,27 @@ export default function ComboBox({
   };
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div className={clsx("relative", className)} ref={containerRef}>
       {label && <label className="text-[--color-primary] mb-1 block">{label}</label>}
+
       <input
         type="text"
         value={inputValue}
         placeholder={placeholder}
         onChange={(e) => {
-          setInputValue(e.target.value);
+          const val = e.target.value;
+          setInputValue(val);
           setIsOpen(true);
+          if (val === "") {
+            onChange?.(""); // <-- сбрасываем фильтр при ручной очистке
+          }
         }}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        className="w-full p-2 rounded border border-[--color-border] text-[--color-primary] bg-white focus:outline-none"
+        className={clsx(
+          "w-full rounded border border-[--color-border] text-[--color-primary] bg-white focus:outline-none",
+          sizeClasses[size]
+        )}
       />
 
       {isOpen && (
@@ -80,10 +97,14 @@ export default function ComboBox({
             filteredOptions.map((option, index) => (
               <li
                 key={index}
-                className={`px-3 py-2 cursor-pointer text-[--color-primary] ${
-                  index === highlightIndex ? "bg-[--color-secondary]/20" : "hover:bg-[--color-secondary]/10"
-                }`}
-                onMouseDown={() => handleSelect(option)} // не blur при клике
+                className={clsx(
+                  "px-3 cursor-pointer text-[--color-primary]",
+                  optionSizeClass,
+                  index === highlightIndex
+                    ? "bg-[--color-secondary]/20"
+                    : "hover:bg-[--color-secondary]/10"
+                )}
+                onMouseDown={() => handleSelect(option)}
               >
                 {option.label}
               </li>

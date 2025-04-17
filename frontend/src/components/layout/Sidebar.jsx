@@ -1,16 +1,32 @@
 import { NavLink } from "react-router-dom";
 import logo from "../../../resource/images/logo.png";
 
+// Временно: пока нет авторизации
+const currentUser = {
+  name: "Иван Иванов",
+  role: "Администратор" // ← потом заменить на данные из контекста
+};
+
 export default function Sidebar() {
   const menuItems = [
     { label: "Регистрация объекта", path: "/register" },
     { label: "Ведение реестра ИГС", path: "/igslist" },
     { label: "Испытания", path: "/lab-tests" },
-    { label: "Входной контроль", path: "/"},
+    { label: "Входной контроль", path: "/materialsjournal" },
+    { label: "Списание материалов", path: "/materialsstorage" },
     { label: "Работа с АОСР", path: "/aosrlist" },
-    { label: "Работа с АООК", path: "/aook" },
-    { label: "Передача ИД", path: "/invoice" },
+    { label: "Работа с АООК", path: "/aooklist" },
+    { label: "Передача ИД", path: "/idinvoice" },
+    { label: "Справочник организаций", path: "/contractors" },
+    { label: "Справочник СП", path: "/splist" },
+    { label: "Справочник Материалов", path: "/materialtypes" },
+    { label: "Реестры", path: "/commonregistry" },
+    { label: "Личный кабинет", path: "/profile" }
   ];
+
+  if (currentUser.role === "Администратор") {
+    menuItems.push({ label: "Пользователи", path: "/profile/users" });
+  }
 
   return (
     <div className="flex flex-col justify-between h-full p-4 bg-[--color-background_menu]">
@@ -20,7 +36,13 @@ export default function Sidebar() {
 
         <nav className="space-y-2">
           {menuItems.map((item, index) => (
-            <NavLink key={index} to={item.path} className="block btn-primary text-center">
+            <NavLink
+              key={index}
+              to={item.path}
+              className={({ isActive }) =>
+                `block btn-primary text-center ${isActive ? "bg-[--color-secondary]" : ""}`
+              }
+            >
               {item.label}
             </NavLink>
           ))}

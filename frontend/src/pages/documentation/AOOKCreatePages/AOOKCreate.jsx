@@ -4,13 +4,17 @@ import ComboBox from "@/components/UI/ComboBox";
 import Input from "@/components/UI/Input";
 import Button from "@/components/UI/Button";
 import Tabs from "@/components/UI/Tabs";
-import AOSRDescriptionTab from "./AOSRDescriptionTab";
-import AOSRNormTab from "./AOSRNormTab";
-import AOSRMaterialsTab from "./AOSRMaterialsTab";
-import AOSRDocsTab from "./AOSRDocsTab";
-import AOSRResponsibleTab from "./AOSRResponsibleTab";
+// Вкладки
+import AOOKDescriptionTab from "./AOOKDescriptionTab";
+import AOOKHiddenWorksTab from "./AOOKHiddenWorksTab";
+import AOOKMaterialsTab from "./AOOKMaterialsTab";
+import AOOKDocsTab from "./AOOKDocsTab";
+import AOOKTestingTab from "./AOOKTestingTab";
+import AOOKCommissionTab from "./AOOKCommissionTab";
+import AOOKResponsibleTab from "./AOOKResponsibleTab";
+import AOOKProjectTab from "./AOOKProjectTab";
 
-export default function AOSRCreate() {
+export default function AOOKCreate() {
   const [construction, setConstruction] = useState("");
   const [object, setObject] = useState("");
   const [section, setSection] = useState("");
@@ -18,15 +22,18 @@ export default function AOSRCreate() {
   const [actName, setActName] = useState("");
 
   const tabs = [
-    { label: "Описание работ", component: <AOSRDescriptionTab /> },
-    { label: "Нормативная документация", component: <AOSRNormTab /> },
-    { label: "Материалы", component: <AOSRMaterialsTab /> },
-    { label: "Исполнительная документация", component: <AOSRDocsTab /> },
-    { label: "Ответственные лица", component: <AOSRResponsibleTab /> },
+    { label: "Описание конструкций", component: <AOOKDescriptionTab /> },
+    { label: "Скрытые работы", component: <AOOKHiddenWorksTab /> },
+    { label: "Проект", component: <AOOKProjectTab /> },
+    { label: "Материалы", component: <AOOKMaterialsTab /> },
+    { label: "Исполнительная документация", component: <AOOKDocsTab /> },
+    { label: "Испытания", component: <AOOKTestingTab /> },
+    { label: "Выводы комиссии", component: <AOOKCommissionTab /> },
+    { label: "Ответственные лица", component: <AOOKResponsibleTab /> },
   ];
 
   return (
-    <PageWrapper title="Создание акта освидетельствования">
+    <PageWrapper title="Создание акта АООК">
       <div className="group-box border border-[--color-border] mb-4">
         <h3 className="group-box-title mb-4">Объект</h3>
 
@@ -55,7 +62,7 @@ export default function AOSRCreate() {
           />
         </div>
 
-        {/* Вторая строка: № акта, наименование, статус акта */}
+        {/* Вторая строка: № акта и наименование */}
         <div className="grid grid-cols-6 gap-4">
           <Input
             placeholder="№ Акта"
@@ -69,6 +76,7 @@ export default function AOSRCreate() {
             onChange={(e) => setActName(e.target.value)}
             className="col-span-4"
           />
+          {/* Статус акта */}
         <select className="w-full p-2 rounded border border-[--color-border] text-[--color-primary]">
           <option>Статус акта</option>
           <option>Черновик</option>
@@ -78,12 +86,12 @@ export default function AOSRCreate() {
         </div>
       </div>
 
-      {/* Tabs — кастомные */}
+      {/* Tabs */}
       <Tabs tabs={tabs} />
 
       {/* Кнопка */}
       <div className="flex justify-end mt-6">
-        <Button>Сформировать АОСР</Button>
+        <Button>Сформировать АООК</Button>
       </div>
     </PageWrapper>
   );

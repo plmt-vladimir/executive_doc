@@ -3,26 +3,46 @@ import Input from "@/components/UI/Input";
 import ComboBox from "@/components/UI/ComboBox";
 import clsx from "clsx";
 
-export default function FilterableTable({ columns, data, className = "", tableWidth = "w-full", pageSize = 50 }) {
+export default function FilterableTable({
+  columns,
+  data,
+  className = "",
+  tableWidth = "w-full",
+  pageSize = 50,
+  onRowClick
+}) {
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
 
   const handleFilterChange = (accessor, value) => {
     setFilters((prev) => ({ ...prev, [accessor]: value }));
-    setPage(1); // сброс страницы при фильтрации
+    setPage(1);
+  };
+
+  const handleSort = (accessor) => {
+    if (sortBy === accessor) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(accessor);
+      setSortDirection("asc");
+    }
   };
 
   const filteredData = useMemo(() => {
     return data.filter((row) =>
       columns.every((col) => {
+        if (col.noFilter) return true;
+
         const filter = filters[col.accessor];
         if (!filter || filter === "") return true;
 
         const value = row[col.accessor];
-        if (!value) return false;
+        if (value == null) return false;
 
         if (col.filterType === "select") {
-          return value.toLowerCase().includes(filter.toLowerCase());
+          return String(value).toLowerCase().includes(String(filter).toLowerCase());
         }
 
         if (col.filterType === "date") {
@@ -33,15 +53,33 @@ export default function FilterableTable({ columns, data, className = "", tableWi
             : rowDate >= filterDate;
         }
 
-        return value.toLowerCase().includes(filter.toLowerCase());
+        return String(value).toLowerCase().includes(String(filter).toLowerCase());
       })
     );
   }, [filters, data, columns]);
 
+  const sortedData = useMemo(() => {
+    if (!sortBy) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
+      const aVal = a[sortBy];
+      const bVal = b[sortBy];
+
+      if (aVal == null || bVal == null) return 0;
+
+      const valA = typeof aVal === "string" ? aVal.toLowerCase() : aVal;
+      const valB = typeof bVal === "string" ? bVal.toLowerCase() : bVal;
+
+      if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+      if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredData, sortBy, sortDirection]);
+
   const paginatedData = useMemo(() => {
     const start = (page - 1) * pageSize;
-    return filteredData.slice(start, start + pageSize);
-  }, [filteredData, page, pageSize]);
+    return sortedData.slice(start, start + pageSize);
+  }, [sortedData, page, pageSize]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize);
 
@@ -53,22 +91,29 @@ export default function FilterableTable({ columns, data, className = "", tableWi
             {columns.map((col, index) => (
               <th
                 key={index}
-                className="bg-[--color-primary] text-white font-bold border-y border-l last:border-r border-[--color-primary] px-4 py-2 text-center"
+                className="bg-[--color-primary] text-white font-bold border-y border-l last:border-r border-[--color-primary] px-4 py-2 text-center cursor-pointer select-none"
+                onClick={() => handleSort(col.accessor)}
               >
                 <div className="flex flex-col items-center w-full">
-                  <span className="mb-1">{col.header}</span>
+                  <span className="mb-1 flex items-center gap-1">
+                    {col.header}
+                    {sortBy === col.accessor && (
+                      <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                    )}
+                  </span>
 
-                  {col.filterType === "select" && (
+                  {!col.noFilter && col.filterType === "select" && (
                     <ComboBox
                       placeholder="Все"
                       options={[{ label: "Все", value: "" }, ...(col.options || [])]}
                       value={filters[col.accessor] || ""}
-                      onChange={(val) => handleFilterChange(col.accessor, val)}
+                      onChange={(val) => handleFilterChange(col.accessor, val?.value ?? val)}
                       className="w-full"
+                      size="sm"
                     />
                   )}
 
-                  {col.filterType === "date" && (
+                  {!col.noFilter && col.filterType === "date" && (
                     <Input
                       type="date"
                       value={filters[col.accessor] || ""}
@@ -77,29 +122,37 @@ export default function FilterableTable({ columns, data, className = "", tableWi
                     />
                   )}
 
-                  {(col.filterType === "text" || col.filterType === undefined) && (
-                    <input
-                      type="text"
-                      placeholder="Фильтр..."
-                      value={filters[col.accessor] || ""}
-                      onChange={(e) => handleFilterChange(col.accessor, e.target.value)}
-                      className="p-1 rounded text-sm w-full text-black"
-                    />
-                  )}
+                  {!col.noFilter &&
+                    (col.filterType === "text" || col.filterType === undefined) && (
+                      <input
+                        type="text"
+                        placeholder="Фильтр..."
+                        value={filters[col.accessor] || ""}
+                        onChange={(e) => handleFilterChange(col.accessor, e.target.value)}
+                        className="p-1 rounded text-sm w-full text-black"
+                      />
+                    )}
                 </div>
               </th>
             ))}
           </tr>
         </thead>
+
         <tbody>
           {paginatedData.map((row, rowIdx) => (
-            <tr key={rowIdx} className="transition cursor-pointer hover:bg-[--color-secondary]">
+            <tr
+              key={rowIdx}
+              className="transition cursor-pointer hover:bg-[--color-secondary]"
+              onClick={() => onRowClick?.(row)}
+            >
               {columns.map((col, colIdx) => (
                 <td
                   key={colIdx}
                   className="border-y border-l last:border-r border-[--color-primary] text-[--color-primary] px-4 py-2 text-center break-words max-w-xs"
                 >
-                  {typeof col.render === "function" ? col.render(row[col.accessor], row) : row[col.accessor]}
+                  {typeof col.render === "function"
+                    ? col.render(row[col.accessor], row)
+                    : row[col.accessor]}
                 </td>
               ))}
             </tr>

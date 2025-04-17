@@ -25,7 +25,6 @@ export default function AOSRDescriptionTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Блок дат */}
       <div className="grid grid-cols-6 gap-4">
         <div className="flex flex-col col-span-2">
           <label className="text-sm text-[--color-primary]">Дата начала работ:</label>
@@ -40,8 +39,6 @@ export default function AOSRDescriptionTab() {
           <Input type="date" value={signDate} onChange={(e) => setSignDate(e.target.value)} />
         </div>
       </div>
-
-      {/* Основной блок с кодами и доп. сведениями */}
       <div className="grid grid-cols-5 gap-4">
         <div className="col-span-2 flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -82,8 +79,6 @@ export default function AOSRDescriptionTab() {
           />
         </div>
       </div>
-
-      {/* Таблицы работ */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-sm text-[--color-primary] mb-1 block">К освидетельствованию предъявлены следующие работы:</label>
@@ -100,13 +95,10 @@ export default function AOSRDescriptionTab() {
           />
         </div>
       </div>
-
-      {/* Селектор работ */}
       <div className="group-box border border-[--color-border]">
         <h3 className="group-box-title mb-2">Селектор работ</h3>
 
         <div className="grid grid-cols-6 gap-4 items-start">
-          {/* Левая колонка */}
           <div className="col-span-1 flex flex-col gap-2">
             <Input placeholder="Код реестра" />
 
@@ -126,8 +118,6 @@ export default function AOSRDescriptionTab() {
 
             <Button className="mt-2">Загрузить</Button>
           </div>
-
-          {/* Правая часть: дерево */}
           <div className="col-span-5 border border-[--color-border] rounded p-4 bg-white h-60 overflow-y-auto">
             <TreeView
               data={[
@@ -151,19 +141,6 @@ export default function AOSRDescriptionTab() {
           </div>
         </div>
       </div>
-
-
-      {/* Статус акта */}
-      <div>
-        <select className="w-full p-2 rounded border border-[--color-border] text-[--color-primary]">
-          <option>Статус акта</option>
-          <option>Черновик</option>
-          <option>Подписан</option>
-          <option>Отклонён</option>
-        </select>
-      </div>
-
-      {/* Кнопки */}
       <div className="flex justify-end gap-2 mt-4">
         <Button>Очистить</Button>
         <Button>Применить</Button>
