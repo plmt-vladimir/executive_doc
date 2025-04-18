@@ -22,6 +22,10 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from common.database import Base
+from modules.core.models import (
+    user, aook, aosr, construction, igs_labtest,
+    materials, organization, project_registry, sp, transfer
+)
 
 target_metadata = Base.metadata
 
