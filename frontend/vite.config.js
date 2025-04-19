@@ -9,4 +9,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  server: {
+    host: true, // позволяет принимать внешние подключения
+    port: 5173, // необязательно, но полезно указать явно
+    allowedHosts: ['.loca.lt'], // разрешаем туннели localtunnel
+  },
 });

@@ -210,4 +210,5 @@ export default function CustomerCard() {
       </div>
     </PageWrapper>
   );
-}
+} 
+

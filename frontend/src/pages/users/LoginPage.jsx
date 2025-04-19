@@ -11,12 +11,16 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    // Временная заглушка. В будущем: запрос к API.
-    if (email === "admin@example.com" && password === "admin") {
-      navigate("/");
-    } else {
-      setError("Неверный логин или пароль");
-    }
+    setError("");
+
+    // ⚠️ Заменить на рабочий access_token для демонстрации
+    const fakeToken = "demo-token-123";
+
+    // Сохраняем фейковый токен
+    localStorage.setItem("token", fakeToken);
+
+    // Переход на главную
+    navigate("/");
   };
 
   return (
@@ -24,7 +28,9 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <img src={logo} alt="PALMETTO" className="w-32 mb-2" />
-          <h2 className="text-xl text-center font-bold text-[--color-primary]">Ведение исполнительной документации</h2>
+          <h2 className="text-xl text-center font-bold text-[--color-primary]">
+            Ведение исполнительной документации
+          </h2>
           <h2 className="text-xl font-bold text-[--color-primary]">Вход в систему</h2>
         </div>
 

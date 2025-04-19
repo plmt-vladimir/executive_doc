@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # 👇 Импорт всех роутов
 from modules.core.routers import construction, user, organization, sp, materials, igs_labtest, aosr, aook, transfer, project_registry
+from modules.core.routers import auth_router
 
 app = FastAPI(title="ExecutiveDoc")
 
@@ -26,3 +27,4 @@ app.include_router(aosr.router)
 app.include_router(aook.router)
 app.include_router(transfer.router)
 app.include_router(project_registry.router)
+app.include_router(auth_router.router)

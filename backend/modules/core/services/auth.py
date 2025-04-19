@@ -3,8 +3,10 @@ from typing import Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-
-from modules.core.schemas.user import TokenData
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from modules.core.models.user import User
+from modules.core.schemas.auth import TokenData
 
 # Ключи и настройки для JWT
 SECRET_KEY = "your-secret-key"  # желательно заменить на .env
@@ -43,3 +45,12 @@ def decode_access_token(token: str) -> Optional[TokenData]:
         return TokenData(email=email)
     except JWTError:
         return None
+    
+async def authenticate_user(session: AsyncSession, email: str, password: str):
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user

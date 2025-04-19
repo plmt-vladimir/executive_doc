@@ -7,6 +7,8 @@ import ProjectOrganizationCard from "./ProjectOrganizationCard";
 import ConstructionControlCard from "./ConstructionControlCard";
 import GeneralContractorCard from "./GeneralContractorCard";
 
+import { ObjectRegistrationProvider } from "./ObjectRegistrstrationContext"; // путь к твоему контексту
+
 export default function ObjectRegistrationPage() {
   const tabs = [
     { label: "Параметры объекта", component: <ObjectParameters /> },
@@ -18,8 +20,10 @@ export default function ObjectRegistrationPage() {
   ];
 
   return (
-    <PageWrapper title="Регистрация объекта">
-      <Tabs tabs={tabs} />
-    </PageWrapper>
+    <ObjectRegistrationProvider>
+      <PageWrapper title="Регистрация объекта">
+        <Tabs tabs={tabs} />
+      </PageWrapper>
+    </ObjectRegistrationProvider>
   );
 }

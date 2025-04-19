@@ -8,25 +8,33 @@ import AOSRList from "./pages/documentation/AOSRList";
 import AOOKList from "./pages/documentation/AOOKList";
 import AOSRCreate from "./pages/documentation/AOSRCreatePages/AOSRCreate";
 import AOOKCreate from "./pages/documentation/AOOKCreatePages/AOOKCreate";
-import IDInvoiceList from "./pages/documentation/IDInvoiceList"
-import IDInvoiceCreate from "./pages/documentation/IDInvoiceCreatePages/IDInvoiceCreate"
-import MaterialsJournal from "./pages/materials/MaterialsJournal"
-import MaterialsStorage from "./pages/materials/MaterialsStorage"
-import UserProfile from "./pages/profile/UserProfile"
-import UsersPage from "./pages/profile/UsersPage"
-import Contractors from "./pages/references/Contractors"
-import SPList from "./pages/references/SPList"
-import MaterialTypes from "./pages/references/MaterialTypes"
-import CommonRegistry from "./pages/references/CommonRegistry"
-import LoginPage from "./pages/users/LoginPage"
+import IDInvoiceList from "./pages/documentation/IDInvoiceList";
+import IDInvoiceCreate from "./pages/documentation/IDInvoiceCreatePages/IDInvoiceCreate";
+import MaterialsJournal from "./pages/materials/MaterialsJournal";
+import MaterialsStorage from "./pages/materials/MaterialsStorage";
+import UserProfile from "./pages/profile/UserProfile";
+import UsersPage from "./pages/profile/UsersPage";
+import Contractors from "./pages/references/Contractors";
+import SPList from "./pages/references/SPList";
+import MaterialTypes from "./pages/references/MaterialTypes";
+import CommonRegistry from "./pages/references/CommonRegistry";
+import LoginPage from "./pages/users/LoginPage";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="autorisation" element={<LoginPage />} />
-        {/* Все маршруты внутри MainLayout */}
-        <Route path="/" element={<MainLayout />}>
+        <Route path="/autorisation" element={<LoginPage />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<HomePage />} />
           <Route path="homepage" element={<HomePage />} />
           <Route path="register" element={<ObjectRegistrationPage />} />
@@ -46,8 +54,6 @@ export default function App() {
           <Route path="splist" element={<SPList />} />
           <Route path="materialtypes" element={<MaterialTypes />} />
           <Route path="commonregistry" element={<CommonRegistry />} />
-
-
         </Route>
       </Routes>
     </BrowserRouter>
