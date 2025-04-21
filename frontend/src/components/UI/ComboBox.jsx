@@ -7,7 +7,8 @@ export default function ComboBox({
   onChange,
   placeholder = "Выберите...",
   className = "",
-  size = "md" // sm / md
+  size = "md", // sm / md
+  value // значение из родителя
 }) {
   const [inputValue, setInputValue] = useState("");
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -22,6 +23,7 @@ export default function ComboBox({
 
   const optionSizeClass = size === "sm" ? "text-sm py-1" : "py-2";
 
+  // Обновляем фильтр при вводе
   useEffect(() => {
     const filtered = options.filter((option) =>
       option.label.toLowerCase().includes(inputValue.toLowerCase())
@@ -29,6 +31,18 @@ export default function ComboBox({
     setFilteredOptions(filtered);
     setHighlightIndex(0);
   }, [inputValue, options]);
+
+  // Синхронизация value → inputValue
+  useEffect(() => {
+    const matched = options.find((opt) => opt.value === value);
+    if (matched) {
+      setInputValue(matched.label);
+    } else if (typeof value === "string") {
+      setInputValue(value);
+    } else {
+      setInputValue("");
+    }
+  }, [value, options]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -42,7 +56,7 @@ export default function ComboBox({
 
   const handleSelect = (option) => {
     setInputValue(option.label);
-    onChange?.(option.value ?? option); // <-- возвращаем .value если есть
+    onChange?.(option.value ?? option);
     setIsOpen(false);
   };
 
@@ -76,10 +90,8 @@ export default function ComboBox({
         onChange={(e) => {
           const val = e.target.value;
           setInputValue(val);
+          onChange?.(val); // сохраняем ввод даже если он не из списка
           setIsOpen(true);
-          if (val === "") {
-            onChange?.(""); // <-- сбрасываем фильтр при ручной очистке
-          }
         }}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
@@ -115,5 +127,6 @@ export default function ComboBox({
     </div>
   );
 }
+
 
 

@@ -2,25 +2,23 @@ import { useState } from "react";
 import Input from "@/components/UI/Input";
 import Button from "@/components/UI/Button";
 import logo from "../../../resource/images/logo.png";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const { login } = useAuth(); // ⬅️ берём login из контекста
+
+  const handleLogin = async () => {
     setError("");
 
-    // ⚠️ Заменить на рабочий access_token для демонстрации
-    const fakeToken = "demo-token-123";
-
-    // Сохраняем фейковый токен
-    localStorage.setItem("token", fakeToken);
-
-    // Переход на главную
-    navigate("/");
+    try {
+      await login(email, password); // ⬅️ вызываем login() из контекста
+    } catch (err) {
+      setError("Неверный email или пароль.");
+    }
   };
 
   return (
@@ -55,3 +53,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

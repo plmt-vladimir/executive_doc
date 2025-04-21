@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -11,151 +11,111 @@ router = APIRouter(prefix="/aook", tags=["АООК"])
 
 # === AOOK ===
 @router.post("/", response_model=schemas.AOOKRead)
-async def create_aook(
-    item: schemas.AOOKCreate,
-    session: AsyncSession = Depends(get_session)
-):
+# roles: ["admin", "editor"]
+async def create_aook(item: schemas.AOOKCreate, session: AsyncSession = Depends(get_session)):
     obj = models.AOOK(**item.dict())
     session.add(obj)
     await session.commit()
     await session.refresh(obj)
     return obj
 
-
 @router.get("/", response_model=List[schemas.AOOKRead])
+# roles: ["admin", "editor"]
 async def get_all_aook(session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(models.AOOK))
     return result.scalars().all()
 
+@router.get("/{id}", response_model=schemas.AOOKRead)
+# roles: ["admin", "editor"]
+async def get_aook(id: int, session: AsyncSession = Depends(get_session)):
+    obj = await session.get(models.AOOK, id)
+    if not obj:
+        raise HTTPException(status_code=404, detail="Объект не найден")
+    return obj
 
-# === AOOK_Section ===
-@router.post("/sections", response_model=schemas.AOOKSectionRead)
-async def create_aook_section(
-    item: schemas.AOOKSectionCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOKSection(**item.dict())
+@router.patch("/{id}", response_model=schemas.AOOKRead)
+# roles: ["admin", "editor"]
+async def update_aook(id: int, item: schemas.AOOKCreate, session: AsyncSession = Depends(get_session)):
+    obj = await session.get(models.AOOK, id)
+    if not obj:
+        raise HTTPException(status_code=404, detail="Объект не найден")
+    for key, value in item.dict().items():
+        setattr(obj, key, value)
     session.add(obj)
     await session.commit()
     await session.refresh(obj)
     return obj
 
-
-@router.get("/sections", response_model=List[schemas.AOOKSectionRead])
-async def get_all_aook_sections(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOKSection))
-    return result.scalars().all()
-
-
-# === AOOK_SP ===
-@router.post("/sp", response_model=schemas.AOOKSPRead)
-async def create_aook_sp(
-    item: schemas.AOOKSPCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOK_SP(**item.dict())
-    session.add(obj)
+@router.delete("/{id}")
+# roles: ["admin", "editor"]
+async def delete_aook(id: int, session: AsyncSession = Depends(get_session)):
+    obj = await session.get(models.AOOK, id)
+    if not obj:
+        raise HTTPException(status_code=404, detail="Объект не найден")
+    await session.delete(obj)
     await session.commit()
-    await session.refresh(obj)
-    return obj
+    return {"detail": "Удалено"}
 
 
-@router.get("/sp", response_model=List[schemas.AOOKSPRead])
-async def get_all_aook_sp(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_SP))
-    return result.scalars().all()
-
-
-# === AOOK_IGS ===
-@router.post("/igs", response_model=schemas.AOOKIGSRead)
-async def create_aook_igs(
-    item: schemas.AOOKIGSCreate,
-    session: AsyncSession = Depends(get_session)
+# === Универсальные CRUD-блоки (для всех связанных моделей) ===
+def generate_crud_routes(
+    prefix: str,
+    model_class,
+    schema_create,
+    schema_read,
+    name: str
 ):
-    obj = models.AOOK_IGS(**item.dict())
-    session.add(obj)
-    await session.commit()
-    await session.refresh(obj)
-    return obj
+    @router.post(f"/{prefix}", response_model=schema_read)
+    # roles: ["admin", "editor"]
+    async def create(item: schema_create, session: AsyncSession = Depends(get_session)):
+        obj = model_class(**item.dict())
+        session.add(obj)
+        await session.commit()
+        await session.refresh(obj)
+        return obj
 
+    @router.get(f"/{prefix}", response_model=List[schema_read])
+    # roles: ["admin", "editor"]
+    async def get_all(session: AsyncSession = Depends(get_session)):
+        result = await session.execute(select(model_class))
+        return result.scalars().all()
 
-@router.get("/igs", response_model=List[schemas.AOOKIGSRead])
-async def get_all_aook_igs(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_IGS))
-    return result.scalars().all()
+    @router.get(f"/{prefix}/{{id}}", response_model=schema_read)
+    # roles: ["admin", "editor"]
+    async def get_by_id(id: int, session: AsyncSession = Depends(get_session)):
+        obj = await session.get(model_class, id)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"{name} не найден")
+        return obj
 
+    @router.patch(f"/{prefix}/{{id}}", response_model=schema_read)
+    # roles: ["admin", "editor"]
+    async def update(id: int, item: schema_create, session: AsyncSession = Depends(get_session)):
+        obj = await session.get(model_class, id)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"{name} не найден")
+        for key, value in item.dict().items():
+            setattr(obj, key, value)
+        session.add(obj)
+        await session.commit()
+        await session.refresh(obj)
+        return obj
 
-# === AOOK_LabTest ===
-@router.post("/labtests", response_model=schemas.AOOKLabTestRead)
-async def create_aook_labtest(
-    item: schemas.AOOKLabTestCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOK_LabTest(**item.dict())
-    session.add(obj)
-    await session.commit()
-    await session.refresh(obj)
-    return obj
+    @router.delete(f"/{prefix}/{{id}}")
+    # roles: ["admin", "editor"]
+    async def delete(id: int, session: AsyncSession = Depends(get_session)):
+        obj = await session.get(model_class, id)
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"{name} не найден")
+        await session.delete(obj)
+        await session.commit()
+        return {"detail": "Удалено"}
 
-
-@router.get("/labtests", response_model=List[schemas.AOOKLabTestRead])
-async def get_all_aook_labtests(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_LabTest))
-    return result.scalars().all()
-
-
-# === AOOK_Responsible ===
-@router.post("/responsibles", response_model=schemas.AOOKResponsibleRead)
-async def create_aook_responsible(
-    item: schemas.AOOKResponsibleCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOK_Responsible(**item.dict())
-    session.add(obj)
-    await session.commit()
-    await session.refresh(obj)
-    return obj
-
-
-@router.get("/responsibles", response_model=List[schemas.AOOKResponsibleRead])
-async def get_all_aook_responsibles(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_Responsible))
-    return result.scalars().all()
-
-
-# === AOOK_AOSR ===
-@router.post("/aosr", response_model=schemas.AOOKAOSRRead)
-async def create_aook_aosr(
-    item: schemas.AOOKAOSRCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOK_AOSR(**item.dict())
-    session.add(obj)
-    await session.commit()
-    await session.refresh(obj)
-    return obj
-
-
-@router.get("/aosr", response_model=List[schemas.AOOKAOSRRead])
-async def get_all_aook_aosr(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_AOSR))
-    return result.scalars().all()
-
-
-# === AOOK_Material ===
-@router.post("/materials", response_model=schemas.AOOKMaterialRead)
-async def create_aook_material(
-    item: schemas.AOOKMaterialCreate,
-    session: AsyncSession = Depends(get_session)
-):
-    obj = models.AOOK_Material(**item.dict())
-    session.add(obj)
-    await session.commit()
-    await session.refresh(obj)
-    return obj
-
-
-@router.get("/materials", response_model=List[schemas.AOOKMaterialRead])
-async def get_all_aook_materials(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(models.AOOK_Material))
-    return result.scalars().all()
+# === Apply CRUD for each related model ===
+generate_crud_routes("sections", models.AOOK_Section, schemas.AOOKSectionCreate, schemas.AOOKSectionRead, "Раздел АООК")
+generate_crud_routes("sp", models.AOOK_SP, schemas.AOOKSPCreate, schemas.AOOKSPRead, "СП для АООК")
+generate_crud_routes("igs", models.AOOK_IGS, schemas.AOOKIGSCreate, schemas.AOOKIGSRead, "ИГС для АООК")
+generate_crud_routes("labtests", models.AOOK_LabTest, schemas.AOOKLabTestCreate, schemas.AOOKLabTestRead, "Лабораторные испытания АООК")
+generate_crud_routes("responsibles", models.AOOK_Responsible, schemas.AOOKResponsibleCreate, schemas.AOOKResponsibleRead, "Ответственный АООК")
+generate_crud_routes("aosr", models.AOOK_AOSR, schemas.AOOKAOSRCreate, schemas.AOOKAOSRRead, "Привязка АОСР")
+generate_crud_routes("materials", models.AOOK_Material, schemas.AOOKMaterialCreate, schemas.AOOKMaterialRead, "Материал АООК")

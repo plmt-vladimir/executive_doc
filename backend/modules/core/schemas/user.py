@@ -13,5 +13,10 @@ class UserCreate(UserBase):
     password: str = Field()
 
 
-class UserRead(UserBase):
-    id: int = Field()
+class UserRead(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)

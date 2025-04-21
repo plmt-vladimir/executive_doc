@@ -23,7 +23,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function App() {
   return (
-    <BrowserRouter>
       <Routes>
         <Route path="/autorisation" element={<LoginPage />} />
 
@@ -56,6 +55,5 @@ export default function App() {
           <Route path="commonregistry" element={<CommonRegistry />} />
         </Route>
       </Routes>
-    </BrowserRouter>
   );
 }
